@@ -1,0 +1,8 @@
+class Main
+{
+	public static void main(args s[])
+	{	
+		Class Obj1 = new Main()
+	}
+
+}
