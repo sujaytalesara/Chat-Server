@@ -1,8 +1,23 @@
-class Main
-{
-	public static void main(args s[])
-	{	
-		Class Obj1 = new Main()
-	}
+module Main where
 
-}
+import Network.Socket
+import System.IO
+import Control.Exception
+import Control.Concurrent
+import Control.Concurrent.Chan
+import Control.Monad (liftM, when)
+import Control.Monad.Fix (fix)
+
+main :: IO ()
+main = do
+  sock <- socket AF_INET Stream 0
+  setSocketOption sock ReuseAddr 1
+  bind sock (SockAddrInet 4242 iNADDR_ANY)
+  listen sock 2
+  chan <- newChan
+  forkIO $ fix $ \loop -> do
+    (_, msg) <- readChan chan
+    loop
+  mainLoop sock chan 0
+
+type Msg = (Int, String)
