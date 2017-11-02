@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package chatserver_java;
 
 import java.io.*;
@@ -31,32 +27,49 @@ public class ServerThread implements Runnable {
     }
 
     @Override
-    public void run(){
+    public void run()
+    {
         System.out.println("Welcome :" + userName);
-
         System.out.println("Local Port :" + socket.getLocalPort());
         System.out.println("Server = " + socket.getRemoteSocketAddress() + ":" + socket.getPort());
 
-        try{
+        try
+        {
             PrintWriter serverOut = new PrintWriter(socket.getOutputStream(), false);
             InputStream serverInStream = socket.getInputStream();
             Scanner serverIn = new Scanner(serverInStream);
             // BufferedReader userBr = new BufferedReader(new InputStreamReader(userInStream));
             // Scanner userIn = new Scanner(userInStream);
-
-            while(!socket.isClosed()){
-                if(serverInStream.available() > 0){
+            serverOut.println(userName + " Joined the chat");
+            serverOut.flush();
+            while(!socket.isClosed())
+            {
+                if(serverInStream.available() > 0)
+                {
                     if(serverIn.hasNextLine()){
                         System.out.println(serverIn.nextLine());
                     }
                 }
-                if(hasMessages){
+                if(hasMessages)
+                {
                     String nextSend = "";
-                    synchronized(messagesToSend){
+                    synchronized(messagesToSend)
+                    {
                         nextSend = messagesToSend.pop();
                         hasMessages = !messagesToSend.isEmpty();
                     }
-                    serverOut.println(userName + " > " + nextSend);
+                    if(nextSend.equals("Exit"))
+                      { 
+                        serverOut.println(userName + "Exited from chat " + this.socket);
+                        serverOut.flush();
+                        //System.out.println("Client " + this.socket + " requested exit");
+                        //System.out.println("Closing this connection.");
+                        this.socket.close();
+                        System.out.println("Connection closed");
+                        
+                         break;
+                     }
+                    serverOut.println(userName + " *> " + nextSend);
                     serverOut.flush();
                 }
             }
