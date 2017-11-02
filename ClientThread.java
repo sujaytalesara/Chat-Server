@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package chatserver_java;
 
 
@@ -11,7 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 
-public class ClientThread implements Runnable {
+public class ClientThread implements Runnable 
+{
     private Socket socket;
     private PrintWriter clientOut;
     private ChatServer server;
@@ -33,15 +30,31 @@ public class ClientThread implements Runnable {
             Scanner in = new Scanner(socket.getInputStream());
 
             // start communicating
-            while(!socket.isClosed()){
-                if(in.hasNextLine()){
+            while(!socket.isClosed())
+            {
+                if(in.hasNextLine())
+                {
                     String input = in.nextLine();
-                    // NOTE: if you want to check server can read input, uncomment next line and check server file console.
-                    // System.out.println(input);
-                    for(ClientThread thatClient : server.getClients()){
+                   // System.out.println(input);
+                     
+                    for(ClientThread thatClient : server.getClients())
+                    {
                         PrintWriter thatClientOut = thatClient.getWriter();
-                        if(thatClientOut != null){
-                            thatClientOut.write(input + "\r\n");
+                        /* if(input.equals("Exit"))
+                        { 
+                       // System.out.println("Client " + this.socket + " sends exit...");
+                       // System.out.println("Closing this connection.");
+                        this.socket.close();
+                       // System.out.println("Connection closed");
+                        thatClientOut.write("Exited" + "Client Thread");
+                        thatClientOut.flush();
+                        
+                         break;
+                        }*/
+                        if(thatClientOut != null)
+                        {
+                            thatClientOut.write(input + "\r\n" + "#");
+                           // System.out.println(input + "**");
                             thatClientOut.flush();
                         }
                     }
