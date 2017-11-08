@@ -6,14 +6,16 @@ import java.net.Socket;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-public class ServerThread implements Runnable {
+public class ServerThread implements Runnable 
+{
     private Socket socket;
     private String userName;
     private boolean isAlived;
     private final LinkedList<String> messagesToSend;
     private boolean hasMessages = false;
 
-    public ServerThread(Socket socket, String userName){
+    public ServerThread(Socket socket, String userName)
+	{
         this.socket = socket;
         this.userName = userName;
         messagesToSend = new LinkedList<String>();
@@ -74,9 +76,10 @@ public class ServerThread implements Runnable {
                 }
             }
         }
-        catch(IOException ex){
-            ex.printStackTrace();
-        }
+        catch(IOException ex)
+		{
+           	 ex.printStackTrace();
+       	}
 
     }
 }
