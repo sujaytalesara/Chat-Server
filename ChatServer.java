@@ -81,7 +81,7 @@ class ServerThread implements Runnable
     private Socket socket;
     private String userName;
     private Hashtable <String,Integer> userDetails = new Hashtable <String,Integer>();
-    private boolean isAlived;
+    //private boolean isAlived;
     private final LinkedList<String> messagesToSend;
     private boolean hasMessages = false;
     private Integer count = 0;
@@ -141,7 +141,7 @@ class ServerThread implements Runnable
                         nextSend = messagesToSend.pop();
                         hasMessages = !messagesToSend.isEmpty();
                     }
-                    if(nextSend.equals("Exit"))
+                    if(nextSend.contains("LEAVE_CHATROOM"))
                       { 
                         serverOut.println(userName + "Exited from chat " + this.socket);
                         serverOut.flush();
