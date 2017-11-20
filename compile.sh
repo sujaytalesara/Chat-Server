@@ -1,1 +1,1 @@
-javac Server.java
+javac ChatServer.java
