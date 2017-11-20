@@ -2,6 +2,10 @@
 package chatserver_java;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Scanner;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -15,17 +19,17 @@ import java.util.Scanner;
 
 class ChatServer  
 {
-
     private int serverPort;
     private static final int portNumber = 4243;
     private List<ClientThread> clients;
 
-     public ChatServer(int portNumber)
+    public ChatServer(int portNumber)
     {
         this.serverPort = portNumber;
     }
 
-    public List<ClientThread> getClients(){
+    public List<ClientThread> getClients()
+    {
         return clients;
     }
 
@@ -47,7 +51,6 @@ class ChatServer
 
     private void acceptClients(ServerSocket serverSocket)
     {
-
         System.out.println("server starts port = " + serverSocket.getLocalSocketAddress());
         while(true)
         {
@@ -84,13 +87,14 @@ class ServerThread implements Runnable
     //private boolean isAlived;
     private final LinkedList<String> messagesToSend;
     private boolean hasMessages = false;
-    private Integer count = 0;
+    private Integer count = 100;
+    private String studentID = "17306775"; 
     Random randomGenerator = new Random();
 
     public ServerThread(Socket socket, String userName){
         this.socket = socket;
         this.userName = userName;
-        count = randomGenerator.nextInt(10000);
+        count = randomGenerator.nextInt(count);
         userDetails.put(userName,count);
         messagesToSend = new LinkedList<String>();
     }
@@ -105,10 +109,6 @@ class ServerThread implements Runnable
     @Override
     public void run()
     {
-        //System.out.println("Welcome :" + userName);
-        //System.out.println("Local Port :" + socket.getLocalPort());
-        //System.out.println("Server = " + socket.getRemoteSocketAddress() + ":" + socket.getPort());
-        //System.out.println("Joining ID : " + count);
 
         try
         {
@@ -118,41 +118,60 @@ class ServerThread implements Runnable
             // BufferedReader userBr = new BufferedReader(new InputStreamReader(userInStream));
             // Scanner userIn = new Scanner(userInStream);
 
-            serverOut.println(userName + " Joined the chat");
-            serverOut.println("Joining ID : " + count);
+            System.out.println("SERVER_IP:" + socket.getRemoteSocketAddress());
+            System.out.println("PORT:" + socket.getPort());
+            System.out.println("JOIN_ID: " + count);
+            //serverOut.println(userName + " Joined the chat");
             //serverOut.println("Welcome :" + userName);
-            serverOut.println("Local Port :" + socket.getLocalPort());
-            serverOut.println("Server IP :" + socket.getRemoteSocketAddress());
-            serverOut.println("Socket Port No :" + socket.getPort());            
+            //serverOut.println("Socket Port No :" + socket.getPort());            
             serverOut.flush();
+            
+          
             while(!socket.isClosed())
             {
                 if(serverInStream.available() > 0)
                 {
-                    if(serverIn.hasNextLine()){
+                    if(serverIn.hasNextLine())
+                    {
                         System.out.println(serverIn.nextLine());
                     }
                 }
                 if(hasMessages)
                 {
                     String nextSend = "";
+                    String[] Helo = new String[5];
                     synchronized(messagesToSend)
                     {
                         nextSend = messagesToSend.pop();
                         hasMessages = !messagesToSend.isEmpty();
+                        Helo = nextSend.split(" ", 0);
                     }
                     if(nextSend.contains("LEAVE_CHATROOM"))
                       { 
-                        serverOut.println(userName + "Exited from chat " + this.socket);
+                        //serverOut.println(userName + "Exited from chat " + this.socket);
+                        System.out.println("You have succesfully Exited from chat");
+                        serverOut.println(userName + "  LEFT_CHATROOM");
+                        serverOut.println("JOIN_ID:" + userDetails.get(userName));
                         serverOut.flush();
                         //System.out.println("Client " + this.socket + " requested exit");
                         //System.out.println("Closing this connection.");
                         this.socket.close();
-                        System.out.println("Connection closed");
+                        //System.out.println(userName + "LEFT_CHATROOM");
+                        //System.out.println("JOIN_ID:" + userDetails.get(userName));
                         
                          break;
                      }
-                    serverOut.println(userName + " > " + nextSend);
+                    else if(Helo[0].contains("HELO"))
+                    {
+                        System.out.println(nextSend);
+                        System.out.println("SERVER_IP:" + socket.getRemoteSocketAddress());
+                        System.out.println("PORT:" + socket.getPort());
+                        System.out.println("STUDENT_ID:" + studentID);
+                    }
+                    else
+                    {
+                        serverOut.println(userName + " >> " + nextSend);
+                    }
                     serverOut.flush();
                 }
             }
@@ -164,3 +183,52 @@ class ServerThread implements Runnable
     }
 }
     
+class ClientThread implements Runnable 
+{
+    private Socket socket;
+    private PrintWriter clientOut;
+    private ChatServer server;
+
+    public ClientThread(ChatServer server, Socket socket){
+        this.server = server;
+        this.socket = socket;
+    }
+
+    private PrintWriter getWriter(){
+        return clientOut;
+    }
+
+    @Override
+    public void run() {
+        try{
+            // setup
+            this.clientOut = new PrintWriter(socket.getOutputStream(), false);
+            Scanner in = new Scanner(socket.getInputStream());
+
+            // start communicating
+            while(!socket.isClosed())
+            {
+                if(in.hasNextLine())
+                {
+                    String input = in.nextLine();
+                    System.out.println(input + "**");
+                     
+                    for(ClientThread thatClient : server.getClients())
+                    {
+                        PrintWriter thatClientOut = thatClient.getWriter();
+                        if(thatClientOut != null)
+                        {
+                            thatClientOut.write(input + "\r\n");
+                           // System.out.println(input + "**");
+                            thatClientOut.flush();
+                        }
+                    }
+                }
+            }
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+    }
+}
