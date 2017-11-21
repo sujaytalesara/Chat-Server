@@ -1,13 +1,13 @@
-
-package chatserver_java;
-
-
+/**
+ * 
+ * 
+ * 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
-
-public class ClientThread implements Runnable 
+* 
+ class ClientThread implements Runnable 
 {
     private Socket socket;
     private PrintWriter clientOut;
@@ -35,33 +35,25 @@ public class ClientThread implements Runnable
                 if(in.hasNextLine())
                 {
                     String input = in.nextLine();
-                   // System.out.println(input);
+                    System.out.println(input + "**");
                      
                     for(ClientThread thatClient : server.getClients())
                     {
                         PrintWriter thatClientOut = thatClient.getWriter();
-                        /* if(input.equals("Exit"))
-                        { 
-                       // System.out.println("Client " + this.socket + " sends exit...");
-                       // System.out.println("Closing this connection.");
-                        this.socket.close();
-                       // System.out.println("Connection closed");
-                        thatClientOut.write("Exited" + "Client Thread");
-                        thatClientOut.flush();
-                        
-                         break;
-                        }*/
                         if(thatClientOut != null)
                         {
-                            thatClientOut.write(input + "\r\n" + "#");
+                            thatClientOut.write(input + "\r\n");
                            // System.out.println(input + "**");
                             thatClientOut.flush();
                         }
                     }
                 }
             }
-        } catch (IOException e) {
+        } 
+        catch (IOException e) 
+        {
             e.printStackTrace();
         }
     }
 }
+ */
