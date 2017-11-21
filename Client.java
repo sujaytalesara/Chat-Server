@@ -7,45 +7,35 @@ import java.util.Scanner;
 public class Client {
 
     private static final String host = "localhost";
-    private static final int portNumber = 4242;
+    private static final int portNumber = 4243;
 
     private String userName;
     private String serverHost;
     private int serverPort;
     private Scanner userInputScanner;
+    private String chatRoom;
 
-    public static void main(String[] args){
-        String readName = null;
-        Scanner scan = new Scanner(System.in);
-        System.out.println("Please input username:");
-        while(readName == null || readName.trim().equals("")){
-            // null, empty, whitespace(s) not allowed.
-            readName = scan.nextLine();
-            if(readName.trim().equals("")){
-                System.out.println("Invalid. Please enter again:");
-            }
-        }
-
-        Client client = new Client(readName, host, portNumber);
-        client.startClient(scan);
-    }
-
-    private Client(String userName, String host, int portNumber){
+   
+    private Client(String userName, String host, int portNumber,String chatRoom){
         this.userName = userName;
         this.serverHost = host;
         this.serverPort = portNumber;
+        this.chatRoom = chatRoom;
     }
 
-    private void startClient(Scanner scan){
-        try{
+    private void startClient(Scanner scan)
+    {
+        try
+        {
             Socket socket = new Socket(serverHost, serverPort);
             Thread.sleep(1000); // waiting for network communicating.
 
-            ServerThread serverThread = new ServerThread(socket, userName);
+            ServerThread serverThread = new ServerThread(socket,userName,chatRoom);
             Thread serverAccessThread = new Thread(serverThread);
             serverAccessThread.start();
             while(serverAccessThread.isAlive()){
-                if(scan.hasNextLine()){
+                if(scan.hasNextLine())
+                {
                     serverThread.addNextMessage(scan.nextLine());
                 }
                 // NOTE: scan.hasNextLine waits input (in the other words block this thread's process).
@@ -55,11 +45,39 @@ public class Client {
                 //    Thread.sleep(200);
                 // }
             }
-        }catch(IOException ex){
+        }
+        catch(IOException ex)
+        {
             System.err.println("Fatal Connection error!");
             ex.printStackTrace();
-        }catch(InterruptedException ex){
+        }
+        catch(InterruptedException ex)
+        {
             System.out.println("Interrupted");
         }
+    }
+    
+     public static void main(String[] args){
+        String readName = null;
+        String chatRoom = "";
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter username:");
+        
+        while(readName == null || readName.trim().equals("") || chatRoom == null)
+        {
+            // null, empty, whitespace(s) not allowed.
+            readName = scan.nextLine();
+            if(readName.trim().equals(""))
+            {
+                System.out.println("Invalid. Please enter again:");
+            }
+            System.out.println("Enter chatroom name");
+            chatRoom = scan.next();
+            System.out.println(chatRoom);
+            
+        }
+
+        Client client = new Client(readName, host, portNumber,chatRoom);
+        client.startClient(scan);
     }
 }
