@@ -83,23 +83,64 @@ class ServerThread implements Runnable
 {
     private Socket socket;
     private String userName;
+    private String chatRoomName;
+    private Integer room_Ref;
+    
+    // Username -- Join ID
     private Hashtable <String,Integer> userDetails = new Hashtable <String,Integer>();
+    // Username -- ChatRoom
+    private Hashtable <Integer,String> userRoom = new Hashtable <Integer,String>();
+    // ChatRoom -- ChatRoom Ref ID
+    private Hashtable <String,Integer> chatRoomRef = new Hashtable <String,Integer>();
+
     //private boolean isAlived;
     private final LinkedList<String> messagesToSend;
     private boolean hasMessages = false;
-    private Integer count = 100;
+    private Integer joinID = 100;
     private String studentID = "17306775"; 
-    Random randomGenerator = new Random();
+    
+    
 
-    public ServerThread(Socket socket, String userName){
+    public ServerThread(Socket socket, String userName,String chatRoom)
+    {
         this.socket = socket;
         this.userName = userName;
-        count = randomGenerator.nextInt(count);
-        userDetails.put(userName,count);
-        messagesToSend = new LinkedList<String>();
+        this.chatRoomName = chatRoom;
+        // Reference number generation
+        Random randomGenerator = new Random();
+        this.joinID = randomGenerator.nextInt(joinID);
+        //this.room_Ref = randomGenerator.nextInt(count);
+        //chatRoomRef.put(chatRoom, room_Ref);
+        messagesToSend = new LinkedList<>();
+        
+        // Dictionary Objects
+        userDetails.put(userName,joinID);
+        userRoom.put(joinID, chatRoom);
+        
+    /*    if(chatRoomRef.isEmpty())
+        {
+            System.out.println("ROOM IS EMPTY");
+            this.room_Ref = randomGenerator.nextInt(joinID);
+            chatRoomRef.put(chatRoom, room_Ref);
+        }
+        else */
+    
+        if ((chatRoomRef.containsKey(chatRoom)) == false)
+        {
+            System.out.println("False...");
+            this.room_Ref = randomGenerator.nextInt(joinID);
+            chatRoomRef.put(chatRoom, room_Ref);
+            
+        }
+        else if ((chatRoomRef.containsKey(chatRoom)) == true)
+        {
+            System.out.println(chatRoomRef.containsKey(chatRoom)+ "3True....3" + chatRoomRef.keySet().contains(chatRoom));
+            
+        }
     }
 
-    public void addNextMessage(String message){
+    public void addNextMessage(String message)
+    {
         synchronized (messagesToSend){
             hasMessages = true;
             messagesToSend.push(message);
@@ -109,7 +150,7 @@ class ServerThread implements Runnable
     @Override
     public void run()
     {
-
+        
         try
         {
             PrintWriter serverOut = new PrintWriter(socket.getOutputStream(), false);
@@ -117,10 +158,12 @@ class ServerThread implements Runnable
             Scanner serverIn = new Scanner(serverInStream);
             // BufferedReader userBr = new BufferedReader(new InputStreamReader(userInStream));
             // Scanner userIn = new Scanner(userInStream);
-
-            System.out.println("SERVER_IP:" + socket.getRemoteSocketAddress());
-            System.out.println("PORT:" + socket.getPort());
-            System.out.println("JOIN_ID: " + count);
+           
+            System.out.println("JOINED_CHATROOM :" + userRoom.get(joinID));
+            System.out.println("SERVER_IP :" + socket.getRemoteSocketAddress());
+            System.out.println("PORT :" + socket.getPort());
+            System.out.println("ROOM_REF : " + chatRoomRef.get((userRoom.get(joinID))));
+            System.out.println("JOIN_ID : " + joinID);
             //serverOut.println(userName + " Joined the chat");
             //serverOut.println("Welcome :" + userName);
             //serverOut.println("Socket Port No :" + socket.getPort());            
@@ -149,8 +192,8 @@ class ServerThread implements Runnable
                     if(nextSend.contains("LEAVE_CHATROOM"))
                       { 
                         //serverOut.println(userName + "Exited from chat " + this.socket);
-                        System.out.println("You have succesfully Exited from chat");
-                        serverOut.println(userName + "  LEFT_CHATROOM");
+                        //System.out.println("You have succesfully Exited from chat");
+                        serverOut.println("LEFT_CHATROOM :" + chatRoomRef.get(userName));
                         serverOut.println("JOIN_ID:" + userDetails.get(userName));
                         serverOut.flush();
                         //System.out.println("Client " + this.socket + " requested exit");
@@ -211,7 +254,7 @@ class ClientThread implements Runnable
                 if(in.hasNextLine())
                 {
                     String input = in.nextLine();
-                    System.out.println(input + "**");
+                    System.out.println(input + "************");
                      
                     for(ClientThread thatClient : server.getClients())
                     {
